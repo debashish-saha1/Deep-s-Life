@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Journey Diorama — 3D Scene</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=6">
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <main id="app">
+    <canvas id="scene" aria-label="Interactive 3D journey diorama"></canvas>
+    <header>
+      <div>
+        <h1>Deep’s Life</h1>
+      </div>
+      <div class="actions">
+        <button id="reset" type="button">Reset view</button>
+      </div>
+    </header>
+    <aside id="hint">Tap a model · Drag to orbit</aside>
+    <div id="hover-label" role="status" hidden></div>
+    <section id="story-panel" aria-live="polite" hidden>
+      <button id="close-story" type="button" aria-label="Return to the full scene">← Full scene</button>
+      <span id="story-kicker"></span>
+      <h2 id="story-title"></h2>
+      <p id="story-copy"></p>
+    </section>
+    <div id="loading"><span></span><b>Assembling the scene…</b></div>
+    <div id="error" hidden></div>
+  </main>
+  <script type="module" src="app.js?v=11"></script>
+</body>
+</html>
