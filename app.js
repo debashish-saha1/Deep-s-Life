@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 const canvas = document.querySelector('#scene');
 const loading = document.querySelector('#loading');
@@ -8,9 +9,20 @@ const errorBox = document.querySelector('#error');
 const app = document.querySelector('#app');
 const hoverLabel = document.querySelector('#hover-label');
 const storyPanel = document.querySelector('#story-panel');
+const storyScroll = document.querySelector('.story-scroll');
 const storyKicker = document.querySelector('#story-kicker');
 const storyTitle = document.querySelector('#story-title');
 const storyCopy = document.querySelector('#story-copy');
+const storyImage = document.querySelector('#story-image');
+const storyLinks = document.querySelector('#story-links');
+const storyGallery = document.querySelector('#story-gallery');
+const storyHighlightsTitle = document.querySelector('#story-highlights-title');
+const storyHighlights = document.querySelector('#story-highlights');
+const storyResourcesBlock = document.querySelector('#story-resources-block');
+const storyResourcesTitle = document.querySelector('#story-resources-title');
+const storyResources = document.querySelector('#story-resources');
+const storyVideosBlock = document.querySelector('#story-videos-block');
+const storyVideos = document.querySelector('#story-videos');
 const closeStory = document.querySelector('#close-story');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe5cfad);
@@ -38,15 +50,111 @@ key.shadow.mapSize.set(2048,2048); key.shadow.camera.left=-9; key.shadow.camera.
 const fill = new THREE.DirectionalLight(0xa9c9e4,1.4); fill.position.set(8,6,-6); scene.add(fill);
 
 const world = new THREE.Group(); world.name='Journey Diorama'; scene.add(world);
+const realPhotos=Object.freeze({
+  life:{src:'assets/photos/life.webp',alt:'A visual timeline of Debashish growing from childhood to graduation and adulthood.',caption:'Growing through every chapter'},
+  career:{src:'assets/photos/career.webp',alt:'Debashish during a day at the IBM research campus.',caption:'A day in the life at IBM Research'},
+  family:{src:'assets/photos/family.webp',alt:'Debashish and his family visiting the Taj Mahal.',caption:'A family memory at the Taj Mahal'},
+  city:{src:'assets/photos/city.webp',alt:'Debashish traveling through the Staten Island Ferry terminal in New York.',caption:'Moving through New York City'},
+  garden:{src:'assets/photos/garden.webp',alt:'Debashish choosing flowers at a garden center.',caption:'Finding color beyond the code'},
+  familyKids:{src:'assets/photos/family-kids.webp',alt:'Debashish smiling with four children during a joyful family moment.',caption:'The joy in everyday family moments'},
+  familyBaby:{src:'assets/photos/family-baby.webp',alt:'Debashish holding a baby outdoors under a bright blue sky.',caption:'A small moment worth holding onto'},
+  giving:{src:'assets/photos/life-giving.webp',alt:'Debashish donating blood at the New York Blood Center.',caption:'Putting kindness into action'},
+  holi:{src:'assets/photos/holi.webp',alt:'Debashish celebrating Holi in a traditional embroidered kurta.',caption:'Color, culture, and celebration'},
+});
+const researchShelf=Object.freeze([
+  {meta:'Patent · US 12,190,210 · 2025',title:'Configurable and scalable machine-learning model lifecycle operator',detail:'An end-to-end operator for reusable ML lifecycle tasks, pipelines, triggers, and model versions.',href:'https://patents.google.com/patent/US12190210B2/en'},
+  {meta:'Patent · US 11,429,434 · 2022',title:'Elastic execution of machine-learning workloads using application-based profiling',detail:'Profiles execution and resource usage so ML workloads can scale resources intelligently.',href:'https://patents.google.com/patent/US11429434B2/en'},
+  {meta:'Patent · US 11,294,759 · 2022',title:'Detection of failure conditions and restoration of deployed models',detail:'Detects drift, bias, or security failures and launches restoration pipelines for deployed AI models.',href:'https://patents.google.com/patent/US11294759B2/en'},
+  {meta:'Patent application · US 2020/0184380',title:'Creating optimized machine-learning models',detail:'Automates model and algorithm selection under customer-defined accuracy, cost, and hardware constraints.',href:'https://patents.google.com/patent/US20200184380A1/en'},
+  {meta:'Paper · 2025',title:'FLOW-BENCH: Towards Conversational Generation of Enterprise Workflows',detail:'A dataset and LLM-based approach for turning natural-language instructions into structured business workflows.',href:'https://arxiv.org/abs/2505.11646'},
+  {meta:'ICAPS · 2024',title:'A Human-in-the-loop API Sequencing Tool Powered by AI Planning',detail:'A real-time planner that recommends and completes workflows across more than 600 APIs.',href:'https://research.ibm.com/publications/a-human-in-the-loop-api-sequencing-tool-powered-by-ai-planning'},
+  {meta:'Paper · 2019',title:'NeuNetS: An Automated Synthesis Engine for Neural Network Design',detail:'Automated custom neural-network synthesis for image and text tasks without requiring expert architecture design.',href:'https://arxiv.org/abs/1901.06261'},
+]);
+const videoShelf=Object.freeze({
+  career:{meta:'Career · Instagram highlight',title:'A day in the life at IBM',detail:'A personal look at the people, campus, and routines behind the research.',href:'https://www.instagram.com/stories/highlights/17979630176714023/',poster:'assets/photos/career.webp'},
+  fire:{meta:'Passion · YouTube Short',title:'The fire-breathing performance',detail:'The boldest chapter in motion.',href:'https://youtube.com/shorts/TPOYb9iSZ-U',poster:'assets/chapters/passion.webp'},
+  dance:{meta:'Life · Instagram highlight',title:'Dancing through the journey',detail:'Movement, celebration, and moments away from the keyboard.',href:'https://www.instagram.com/stories/highlights/18067475435026367/',poster:'assets/photos/holi.webp'},
+  garden:{meta:'Life · Instagram highlight',title:'The garden chapter',detail:'A quieter kind of creativity, rooted in color and patience.',href:'https://www.instagram.com/stories/highlights/18370880611133357/',poster:'assets/photos/garden.webp'},
+});
 const stories = Object.freeze({
-  'Young traveler':{label:'My Life',title:'The center of my story',copy:'The journey at the heart of everything — shaped by curiosity, courage, and constant growth.'},
-  'Learning desk — updated':{label:'My Career',title:'Building what comes next',copy:'The work, ideas, and tools that turn ambition into a path forward.'},
-  'University campus':{label:'My Education',title:'Where I learned and grew',copy:'The campuses and communities that shaped how I learn, think, and build.'},
-  'College campus':{label:'My Education',title:'Where I learned and grew',copy:'The campuses and communities that shaped how I learn, think, and build.'},
-  'Group of four dolls':{label:'My Family',title:'The people who keep me grounded',copy:'Family is the support, connection, and shared strength behind every chapter.'},
-  'City skyline':{label:'My City',title:'New York City',copy:'Energy, opportunity, and the backdrop to so many chapters of my life.'},
-  'Fire breathing performer':{label:'My Passion',title:'The spark behind the journey',copy:'A reminder to create boldly, take risks, and bring ideas to life.'},
-  'Orbit airplane':{label:'My Journey',title:'Always moving forward',copy:'Every destination opens another perspective, possibility, and story.'},
+  'Young traveler':{
+    label:'My Life',title:'From Tangail to New York',
+    copy:'I’m Debashish Saha — a software engineer, machine-learning builder, researcher, and inventor. My story stretches from Tangail, Bangladesh, to New York, guided by curiosity and a simple principle: be selfless, be kind, and be grateful.',
+    image:'assets/chapters/life.webp',imageAlt:'A sculpted journey from Bangladesh to New York with Debashish at its center.',
+    photos:[realPhotos.life,realPhotos.giving,realPhotos.city,realPhotos.garden,realPhotos.holi],
+    highlightsTitle:'The story so far',
+    highlights:['From Tangail, Bangladesh, to a life and career in New York City.','Computer-science degrees from Queens College and Stony Brook University.','Researcher and inventor with four U.S. machine-learning patents.'],
+    resources:researchShelf,
+    videos:[videoShelf.career,videoShelf.dance,videoShelf.garden],
+    links:[['GitHub','https://github.com/debashish-saha1'],['Instagram','https://www.instagram.com/deepsaha114/'],['Facebook','https://www.facebook.com/deepsaha114']],
+  },
+  'Learning desk — updated':{
+    label:'My Career',title:'Research into real-world AI',
+    copy:'After nearly nine years at IBM Research building neural-network synthesis, reinforcement-learning, LLM-agent, and ML-lifecycle systems, I joined Mastercard’s AI Center of Excellence as an AI Engineer II to help create AI products with real-world impact.',
+    image:'assets/chapters/career.webp',imageAlt:'A sculpted AI engineering workspace with neural networks and modular systems.',
+    photos:[realPhotos.career,realPhotos.life],
+    highlights:['AI Engineer II in Mastercard’s AI Center of Excellence.','Nearly nine years at IBM Research, progressing from Machine Learning Engineer to Senior Machine Learning Engineer.','Built LLM compliance agents, reinforcement-learning tooling, NeuNetS / AutoAI, and scalable ML lifecycle pipelines.','Co-author of NeuNetS, FLOW-BENCH, and an ICAPS API-planning demo; named inventor across four ML patent records.'],
+    resources:researchShelf,
+    videos:[videoShelf.career],
+    links:[['LinkedIn','https://www.linkedin.com/in/debashish-saha/'],['Scholar','https://scholar.google.com/citations?user=wLNdkp0AAAAJ&hl=en'],['GitHub','https://github.com/debashish-saha1']],
+  },
+  'University campus':{
+    label:'My Education',title:'Computer science, twice explored',
+    copy:'I earned my bachelor’s degree in Computer Science from Queens College, with a minor in Mathematics, then completed a master’s degree in Computer Science at Stony Brook University. Both chapters shaped how I think, research, and build.',
+    image:'assets/chapters/education.webp',imageAlt:'Two sculpted university campuses surrounded by books and computer-science forms.',
+    photos:[realPhotos.life],
+    highlightsTitle:'Degrees & foundations',
+    highlights:['M.S. in Computer Science — Stony Brook University.','Bachelor’s degree in Computer Science — Queens College, 2012–2016.','Minor in Mathematics at Queens College.','A continuing interest in system design, machine learning, and research.'],
+    links:[['LinkedIn','https://www.linkedin.com/in/debashish-saha/'],['Instagram','https://www.instagram.com/deepsaha114/']],
+  },
+  'College campus':{
+    label:'My Education',title:'Computer science, twice explored',
+    copy:'I earned my bachelor’s degree in Computer Science from Queens College, with a minor in Mathematics, then completed a master’s degree in Computer Science at Stony Brook University. Both chapters shaped how I think, research, and build.',
+    image:'assets/chapters/education.webp',imageAlt:'Two sculpted university campuses surrounded by books and computer-science forms.',
+    photos:[realPhotos.life],
+    highlightsTitle:'Degrees & foundations',
+    highlights:['M.S. in Computer Science — Stony Brook University.','Bachelor’s degree in Computer Science — Queens College, 2012–2016.','Minor in Mathematics at Queens College.','A continuing interest in system design, machine learning, and research.'],
+    links:[['LinkedIn','https://www.linkedin.com/in/debashish-saha/'],['Instagram','https://www.instagram.com/deepsaha114/']],
+  },
+  'Group of four dolls':{
+    label:'My Family',title:'The people who keep me grounded',
+    copy:'Family is the constant behind every milestone — the source of belonging, perspective, resilience, and the memories that make every destination meaningful.',
+    image:'assets/chapters/family.webp',imageAlt:'A warm sculpted family portrait surrounded by plants and travel keepsakes.',
+    photos:[realPhotos.family,realPhotos.familyKids,realPhotos.familyBaby,realPhotos.life],
+    highlightsTitle:'What this chapter holds',
+    highlights:['Belonging across Bangladesh and New York.','Shared travel memories that connect generations.','Perspective, resilience, and support behind every milestone.'],
+    links:[['A family memory','https://www.instagram.com/deepsaha114/p/C2KnP3ZyBmU/']],
+  },
+  'City skyline':{
+    label:'My City',title:'New York City',
+    copy:'New York is home: energetic, diverse, demanding, and always moving. It is where my education, research, career, and community became part of one continuing story.',
+    image:'assets/chapters/city.webp',imageAlt:'A handcrafted New York City diorama with its skyline, ferry, and Statue of Liberty.',
+    photos:[realPhotos.city],
+    highlightsTitle:'New York chapters',
+    highlights:['New York became home after Tangail, Bangladesh.','Queens College built the academic foundation.','The city’s energy continues to shape work, community, and ambition.'],
+    links:[['Staten Island Ferry','https://www.instagram.com/deepsaha114/p/DTW7FxYDh6C/'],['Instagram','https://www.instagram.com/deepsaha114/']],
+  },
+  'Fire breathing performer':{
+    label:'My Passion',title:'A little bit of fire',
+    copy:'Fire breathing is the most literal expression of how I like to create: focused, fearless, and willing to step beyond the familiar. Travel, dancing, and gardening bring their own kinds of energy to the journey.',
+    image:'assets/chapters/passion.webp',imageAlt:'The Deep’s Life diorama centered on a theatrical fire-breathing performance.',
+    photos:[realPhotos.holi,realPhotos.garden],
+    highlightsTitle:'Beyond engineering',
+    highlights:['Fire breathing — focus, control, and a willingness to be bold.','Dancing and travel bring movement and new perspectives.','Gardening creates a slower, more grounded kind of creativity.'],
+    videos:[videoShelf.fire,videoShelf.dance,videoShelf.garden],
+    links:[['Watch the performance','https://youtube.com/shorts/TPOYb9iSZ-U'],['Instagram','https://www.instagram.com/deepsaha114/']],
+  },
+  'Orbit airplane':{
+    label:'My Journey',title:'Always moving forward',
+    copy:'From Bangladesh to New York, from Queens College and Stony Brook to IBM Research and Mastercard, each chapter has opened a new destination. The journey is still unfolding.',
+    image:'assets/chapters/life.webp',imageAlt:'A sculpted path connecting Bangladesh and New York around a central traveler.',
+    photos:[realPhotos.life,realPhotos.giving,realPhotos.family,realPhotos.familyKids,realPhotos.familyBaby,realPhotos.city,realPhotos.holi,realPhotos.garden],
+    highlightsTitle:'Milestones along the way',
+    highlights:['Tangail to New York City.','Queens College to Stony Brook University.','IBM Research to Mastercard’s AI Center of Excellence.','Published research, four patents, and an evolving body of AI work.'],
+    resources:researchShelf,
+    videos:[videoShelf.career,videoShelf.fire,videoShelf.dance,videoShelf.garden],
+    links:[['Instagram','https://www.instagram.com/deepsaha114/'],['LinkedIn','https://www.linkedin.com/in/debashish-saha/'],['Scholar','https://scholar.google.com/citations?user=wLNdkp0AAAAJ&hl=en']],
+  },
 });
 const interactiveRoots=[];
 const raycaster=new THREE.Raycaster();
@@ -149,14 +257,15 @@ planet('Inner red planet',2.48,4.62,-1.98,.24,0xc85836);
 airplane();
 
 const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
 const specs = [
-  ['young-man.glb','Young traveler',[0,.29,.72],[5.05,5.05,5.05],[0,.03,0]],
-  ['city.glb','City skyline',[1.8,1.34,-1.65],[3.45,3.45,3.45],[0,.12,0]],
-  ['fire-breathing-person.glb','Fire breathing performer',[0,2.95,-6],[4.1,4.1,4.1],[0,.03,0]],
-  ['family-dolls.glb','Group of four dolls',[1.4,.26,1.06],[2.05,2.05,2.05],[0,-.36,0]],
-  ['desk-v2.glb','Learning desk — updated',[-1.62,.3,1.3],[2.05,2.05,2.05],[0,.22,0]],
-  ['university-campus.glb','University campus',[-2.28,1.45,-2.04],[2.12,2.12,2.12],[0,.12,0]],
-  ['college-campus.glb','College campus',[-.72,1.45,-2],[1.9,1.9,1.9],[0,-.14,0]],
+  ['young-man.optimized.glb','Young traveler',[0,.29,.72],[5.05,5.05,5.05],[0,.03,0]],
+  ['city.optimized.glb','City skyline',[1.8,1.34,-1.65],[3.45,3.45,3.45],[0,.12,0]],
+  ['fire-breathing-person.optimized.glb','Fire breathing performer',[0,2.95,-6],[4.1,4.1,4.1],[0,.03,0]],
+  ['family-dolls.optimized.glb','Group of four dolls',[1.4,.26,1.06],[2.05,2.05,2.05],[0,-.36,0]],
+  ['desk-v2.optimized.glb','Learning desk — updated',[-1.62,.3,1.3],[2.05,2.05,2.05],[0,.22,0]],
+  ['university-campus.optimized.glb','University campus',[-2.28,1.45,-2.04],[2.12,2.12,2.12],[0,.12,0]],
+  ['college-campus.optimized.glb','College campus',[-.72,1.45,-2],[1.9,1.9,1.9],[0,-.14,0]],
 ];
 
 async function loadModel([file,name,pos,scale,rot]){
@@ -189,6 +298,54 @@ function showStory(story){
   storyKicker.textContent=story.label;
   storyTitle.textContent=story.title;
   storyCopy.textContent=story.copy;
+  storyImage.src=story.image;
+  storyImage.alt=story.imageAlt;
+  storyLinks.replaceChildren();
+  for(const [label,href] of story.links||[]){
+    const link=document.createElement('a');
+    link.className='story-link';link.href=href;link.target='_blank';link.rel='noopener noreferrer';
+    link.textContent=`${label} ↗`;link.setAttribute('aria-label',`${label} (opens in a new tab)`);
+    storyLinks.append(link);
+  }
+  storyLinks.hidden=!storyLinks.childElementCount;
+  storyGallery.replaceChildren();
+  for(const photo of story.photos||[]){
+    const figure=document.createElement('figure');figure.className='story-photo';
+    const image=document.createElement('img');image.src=photo.src;image.alt=photo.alt;image.loading='lazy';image.decoding='async';
+    const caption=document.createElement('figcaption');caption.textContent=photo.caption;
+    figure.append(image,caption);storyGallery.append(figure);
+  }
+  storyHighlightsTitle.textContent=story.highlightsTitle||'Highlights & accomplishments';
+  storyHighlights.replaceChildren();
+  for(const highlight of story.highlights||[]){
+    const item=document.createElement('li');item.textContent=highlight;storyHighlights.append(item);
+  }
+  storyResourcesTitle.textContent=story.resourcesTitle||'Research, papers & patents';
+  storyResources.replaceChildren();
+  for(const resource of story.resources||[]){
+    const card=document.createElement('a');card.className='story-resource';card.href=resource.href;card.target='_blank';card.rel='noopener noreferrer';
+    const meta=document.createElement('span');meta.className='story-resource-meta';meta.textContent=resource.meta;
+    const title=document.createElement('strong');title.textContent=resource.title;
+    const detail=document.createElement('p');detail.textContent=resource.detail;
+    const action=document.createElement('span');action.className='story-resource-action';action.textContent='Open source ↗';
+    card.append(meta,title,detail,action);storyResources.append(card);
+  }
+  storyResourcesBlock.hidden=!storyResources.childElementCount;
+  storyVideos.replaceChildren();
+  for(const video of story.videos||[]){
+    const card=document.createElement('a');card.className='story-video';card.href=video.href;card.target='_blank';card.rel='noopener noreferrer';
+    const media=document.createElement('span');media.className='story-video-media';
+    const poster=document.createElement('img');poster.src=video.poster;poster.alt='';poster.loading='lazy';poster.decoding='async';
+    const play=document.createElement('span');play.className='story-video-play';play.textContent='▶';play.setAttribute('aria-hidden','true');
+    media.append(poster,play);
+    const copy=document.createElement('span');copy.className='story-video-copy';
+    const meta=document.createElement('small');meta.textContent=video.meta;
+    const title=document.createElement('strong');title.textContent=video.title;
+    const detail=document.createElement('span');detail.textContent=video.detail;
+    copy.append(meta,title,detail);card.append(media,copy);storyVideos.append(card);
+  }
+  storyVideosBlock.hidden=!storyVideos.childElementCount;
+  storyScroll.scrollTop=0;
   storyPanel.hidden=false;
   app.classList.add('is-focused');
 }
@@ -204,22 +361,37 @@ function animateCamera(position,target,onComplete){
 
 function focusObject(root){
   const bounds=new THREE.Box3().setFromObject(root);
+  const educationFocus=root.name==='University campus'||root.name==='College campus';
+  if(educationFocus){
+    for(const candidate of interactiveRoots){
+      if(candidate.name==='University campus'||candidate.name==='College campus')bounds.expandByObject(candidate);
+    }
+  }
   const sphere=bounds.getBoundingSphere(new THREE.Sphere());
   const size=bounds.getSize(new THREE.Vector3());
   if(!Number.isFinite(sphere.radius)||sphere.radius<=0)return;
+  for(const candidate of interactiveRoots){
+    const keepEducationPair=educationFocus&&(candidate.name==='University campus'||candidate.name==='College campus');
+    candidate.visible=candidate===root||keepEducationPair;
+  }
   focusedRoot=root;
   hoverLabel.hidden=true;
   controls.autoRotate=false;
+  showStory(root.userData.story);
   const verticalFov=THREE.MathUtils.degToRad(camera.fov);
   const horizontalFov=2*Math.atan(Math.tan(verticalFov/2)*camera.aspect);
   const verticalFit=(size.y*.5)/Math.tan(verticalFov*.5);
   const horizontalFit=(size.x*.5)/Math.tan(horizontalFov*.5);
-  const distance=Math.max(Math.max(verticalFit,horizontalFit)*1.22+size.z*.35,2.4);
-  const direction=camera.position.clone().sub(controls.target).normalize();
+  const canvasRect=canvas.getBoundingClientRect();
+  const panelRect=storyPanel.getBoundingClientRect();
+  const visibleFraction=THREE.MathUtils.clamp((panelRect.top-canvasRect.top)/canvasRect.height,.24,.7);
+  const modelHeightFraction=THREE.MathUtils.clamp(visibleFraction-.08,.2,.54);
+  const distance=Math.max(Math.max(verticalFit/modelHeightFraction,horizontalFit/.88)+size.z*.35,3.2);
+  const facingAngle=educationFocus?0:root.rotation.y;
+  const direction=new THREE.Vector3(Math.sin(facingAngle),.1,Math.cos(facingAngle)).normalize();
   const target=sphere.center.clone();
-  target.y-=size.y*.08;
+  target.y-=distance*Math.tan(verticalFov*.5)*(1-visibleFraction);
   const position=target.clone().add(direction.multiplyScalar(distance));
-  showStory(root.userData.story);
   animateCamera(position,target,()=>{controls.enabled=true});
 }
 
@@ -227,6 +399,7 @@ function returnToFullScene(){
   hoverLabel.hidden=true;
   storyPanel.hidden=true;
   app.classList.remove('is-focused');
+  for(const candidate of interactiveRoots)candidate.visible=true;
   focusedRoot=null;
   animateCamera(home.position,home.target,()=>{controls.enabled=true;controls.autoRotate=true});
 }
