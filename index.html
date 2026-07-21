@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=11">
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
   </script>
@@ -27,13 +27,41 @@
     <div id="hover-label" role="status" hidden></div>
     <section id="story-panel" aria-live="polite" hidden>
       <button id="close-story" type="button" aria-label="Return to the full scene">← Full scene</button>
-      <span id="story-kicker"></span>
-      <h2 id="story-title"></h2>
-      <p id="story-copy"></p>
+      <div class="story-scroll">
+        <div class="story-lead">
+          <figure class="story-media">
+            <img id="story-image" alt="" decoding="async">
+          </figure>
+          <div class="story-content">
+            <span id="story-kicker"></span>
+            <h2 id="story-title"></h2>
+            <p id="story-copy"></p>
+            <nav id="story-links" aria-label="Explore this chapter"></nav>
+          </div>
+        </div>
+        <div class="story-details">
+          <section class="story-block">
+            <h3>Real moments</h3>
+            <div id="story-gallery"></div>
+          </section>
+          <section class="story-block story-highlights-block">
+            <h3 id="story-highlights-title">Highlights &amp; accomplishments</h3>
+            <ul id="story-highlights"></ul>
+          </section>
+          <section id="story-resources-block" class="story-block" hidden>
+            <h3 id="story-resources-title">Research, papers &amp; patents</h3>
+            <div id="story-resources"></div>
+          </section>
+          <section id="story-videos-block" class="story-block" hidden>
+            <h3>Watch the story</h3>
+            <div id="story-videos"></div>
+          </section>
+        </div>
+      </div>
     </section>
     <div id="loading"><span></span><b>Assembling the scene…</b></div>
     <div id="error" hidden></div>
   </main>
-  <script type="module" src="app.js?v=11"></script>
+  <script type="module" src="app.js?v=23"></script>
 </body>
 </html>
