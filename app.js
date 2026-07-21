@@ -53,6 +53,7 @@ const world = new THREE.Group(); world.name='Journey Diorama'; scene.add(world);
 const realPhotos=Object.freeze({
   life:{src:'assets/photos/life.webp',alt:'A visual timeline of Debashish growing from childhood to graduation and adulthood.',caption:'Growing through every chapter'},
   career:{src:'assets/photos/career.webp',alt:'Debashish during a day at the IBM research campus.',caption:'A day in the life at IBM Research'},
+  careerIbm:{src:'assets/photos/career-ibm-original.jpg',alt:'Debashish seated in front of the IBM T.J. Watson Research Center sign in Yorktown.',caption:'Seven years of memories at IBM Research'},
   family:{src:'assets/photos/family.webp',alt:'Debashish and his family visiting the Taj Mahal.',caption:'A family memory at the Taj Mahal'},
   city:{src:'assets/photos/city.webp',alt:'Debashish traveling through the Staten Island Ferry terminal in New York.',caption:'Moving through New York City'},
   garden:{src:'assets/photos/garden.webp',alt:'Debashish choosing flowers at a garden center.',caption:'Finding color beyond the code'},
@@ -75,6 +76,7 @@ const videoShelf=Object.freeze({
   fire:{meta:'Passion · YouTube Short',title:'The fire-breathing performance',detail:'The boldest chapter in motion.',href:'https://youtube.com/shorts/TPOYb9iSZ-U',poster:'assets/chapters/passion.webp'},
   dance:{meta:'Life · Instagram highlight',title:'Dancing through the journey',detail:'Movement, celebration, and moments away from the keyboard.',href:'https://www.instagram.com/stories/highlights/18067475435026367/',poster:'assets/photos/holi.webp'},
   garden:{meta:'Life · Instagram highlight',title:'The garden chapter',detail:'A quieter kind of creativity, rooted in color and patience.',href:'https://www.instagram.com/stories/highlights/18370880611133357/',poster:'assets/photos/garden.webp'},
+  snowboarding:{meta:'Passion · Instagram Reel',title:'Life on a snowboard',detail:'A real winter moment—balance, movement, and the freedom of the slope.',href:'https://www.instagram.com/p/C7l4Olaurmz/',poster:'assets/chapters/passion-snowboarding-cartoon.jpg'},
 });
 const stories = Object.freeze({
   'Young traveler':{
@@ -91,12 +93,12 @@ const stories = Object.freeze({
   'Learning desk — updated':{
     label:'My Career',title:'Research into real-world AI',
     copy:'After nearly nine years at IBM Research building neural-network synthesis, reinforcement-learning, LLM-agent, and ML-lifecycle systems, I joined Mastercard’s AI Center of Excellence as an AI Engineer II to help create AI products with real-world impact.',
-    image:'assets/chapters/career.webp',imageAlt:'A sculpted AI engineering workspace with neural networks and modular systems.',
-    photos:[realPhotos.career,realPhotos.life],
+    image:'assets/chapters/career-ibm-cartoon.jpg',imageAlt:'A cartoonized diorama of Debashish seated in front of the IBM T.J. Watson Research Center sign.',
+    photos:[realPhotos.careerIbm,realPhotos.career,realPhotos.life],
     highlights:['AI Engineer II in Mastercard’s AI Center of Excellence.','Nearly nine years at IBM Research, progressing from Machine Learning Engineer to Senior Machine Learning Engineer.','Built LLM compliance agents, reinforcement-learning tooling, NeuNetS / AutoAI, and scalable ML lifecycle pipelines.','Co-author of NeuNetS, FLOW-BENCH, and an ICAPS API-planning demo; named inventor across four ML patent records.'],
     resources:researchShelf,
     videos:[videoShelf.career],
-    links:[['LinkedIn','https://www.linkedin.com/in/debashish-saha/'],['Scholar','https://scholar.google.com/citations?user=wLNdkp0AAAAJ&hl=en'],['GitHub','https://github.com/debashish-saha1']],
+    links:[['IBM anniversary photo','https://www.instagram.com/p/C8keH_nubvn/'],['LinkedIn','https://www.linkedin.com/in/debashish-saha/'],['Scholar','https://scholar.google.com/citations?user=wLNdkp0AAAAJ&hl=en'],['GitHub','https://github.com/debashish-saha1']],
   },
   'University campus':{
     label:'My Education',title:'Computer science, twice explored',
@@ -136,13 +138,13 @@ const stories = Object.freeze({
   },
   'Fire breathing performer':{
     label:'My Passion',title:'A little bit of fire',
-    copy:'Fire breathing is the most literal expression of how I like to create: focused, fearless, and willing to step beyond the familiar. Travel, dancing, and gardening bring their own kinds of energy to the journey.',
-    image:'assets/chapters/passion.webp',imageAlt:'The Deep’s Life diorama centered on a theatrical fire-breathing performance.',
+    copy:'Fire breathing and snowboarding express how I like to live: focused, fearless, and willing to move beyond the familiar. Travel, dancing, and gardening bring their own kinds of energy to the journey.',
+    image:'assets/chapters/passion-snowboarding-cartoon.jpg',imageAlt:'A cartoonized diorama of Debashish snowboarding through a bright winter landscape.',
     photos:[realPhotos.holi,realPhotos.garden],
     highlightsTitle:'Beyond engineering',
-    highlights:['Fire breathing — focus, control, and a willingness to be bold.','Dancing and travel bring movement and new perspectives.','Gardening creates a slower, more grounded kind of creativity.'],
-    videos:[videoShelf.fire,videoShelf.dance,videoShelf.garden],
-    links:[['Watch the performance','https://youtube.com/shorts/TPOYb9iSZ-U'],['Instagram','https://www.instagram.com/deepsaha114/']],
+    highlights:['Fire breathing — focus, control, and a willingness to be bold.','Snowboarding brings balance, movement, and freedom to winter.','Dancing, travel, and gardening create new energy and perspective.'],
+    videos:[videoShelf.snowboarding,videoShelf.fire,videoShelf.dance,videoShelf.garden],
+    links:[['Watch snowboarding','https://www.instagram.com/p/C7l4Olaurmz/'],['Watch the fire performance','https://youtube.com/shorts/TPOYb9iSZ-U'],['Instagram','https://www.instagram.com/deepsaha114/']],
   },
   'Orbit airplane':{
     label:'My Journey',title:'Always moving forward',
@@ -345,8 +347,8 @@ function showStory(story){
     copy.append(meta,title,detail);card.append(media,copy);storyVideos.append(card);
   }
   storyVideosBlock.hidden=!storyVideos.childElementCount;
-  storyScroll.scrollTop=0;
   storyPanel.hidden=false;
+  storyScroll.scrollTop=0;
   app.classList.add('is-focused');
 }
 
@@ -370,10 +372,6 @@ function focusObject(root){
   const sphere=bounds.getBoundingSphere(new THREE.Sphere());
   const size=bounds.getSize(new THREE.Vector3());
   if(!Number.isFinite(sphere.radius)||sphere.radius<=0)return;
-  for(const candidate of interactiveRoots){
-    const keepEducationPair=educationFocus&&(candidate.name==='University campus'||candidate.name==='College campus');
-    candidate.visible=candidate===root||keepEducationPair;
-  }
   focusedRoot=root;
   hoverLabel.hidden=true;
   controls.autoRotate=false;
@@ -383,14 +381,16 @@ function focusObject(root){
   const verticalFit=(size.y*.5)/Math.tan(verticalFov*.5);
   const horizontalFit=(size.x*.5)/Math.tan(horizontalFov*.5);
   const canvasRect=canvas.getBoundingClientRect();
-  const panelRect=storyPanel.getBoundingClientRect();
-  const visibleFraction=THREE.MathUtils.clamp((panelRect.top-canvasRect.top)/canvasRect.height,.24,.7);
+  const visibleFraction=THREE.MathUtils.clamp(storyPanel.offsetTop/canvasRect.height,.24,.7);
   const modelHeightFraction=THREE.MathUtils.clamp(visibleFraction-.08,.2,.54);
   const distance=Math.max(Math.max(verticalFit/modelHeightFraction,horizontalFit/.88)+size.z*.35,3.2);
-  const facingAngle=educationFocus?0:root.rotation.y;
+  const passionFocus=root.name==='Fire breathing performer';
+  const facingAngle=educationFocus?0:passionFocus?-.3:root.rotation.y;
   const direction=new THREE.Vector3(Math.sin(facingAngle),.1,Math.cos(facingAngle)).normalize();
   const target=sphere.center.clone();
-  target.y-=distance*Math.tan(verticalFov*.5)*(1-visibleFraction);
+  const subjectCenterFraction=THREE.MathUtils.clamp(visibleFraction*.62,.16,.4);
+  target.y-=distance*Math.tan(verticalFov*.5)*(1-subjectCenterFraction*2);
+  if(passionFocus)target.x-=size.x*.16;
   const position=target.clone().add(direction.multiplyScalar(distance));
   animateCamera(position,target,()=>{controls.enabled=true});
 }
@@ -399,7 +399,6 @@ function returnToFullScene(){
   hoverLabel.hidden=true;
   storyPanel.hidden=true;
   app.classList.remove('is-focused');
-  for(const candidate of interactiveRoots)candidate.visible=true;
   focusedRoot=null;
   animateCamera(home.position,home.target,()=>{controls.enabled=true;controls.autoRotate=true});
 }
